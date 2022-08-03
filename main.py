@@ -6,11 +6,12 @@ from module import collisionDetection as cD, playerDraw as pD
 
 class APP:
   def __init__(self):
-      pyxel.init(180, 128)
+      pyxel.init(180, 128, fps = 30,)      
+      self.StatusSet()                    
+      pyxel.run(self.update, self.draw)
       
+  def StatusSet(self):
       pyxel.load('assets/assets.pyxres')
-      #pyxel.load('assets/assets_dom.pyxres')
-      #pyxel.load('assets/assets_mt.pyxres')
       
       pyxel.mouse(False)
       
@@ -21,6 +22,7 @@ class APP:
       self.enemy_list = [
                          (0, 1), (1, 1), (2, 1), (3, 1) ,
                          (0, 2), (1, 2), (2, 2), (3, 2) ,
+                         (0, 3), (1, 3), (2, 3), (3, 3) ,
                         ]      
       self.enemy_break = {
                          (0, 1):(0, 7),
@@ -31,27 +33,39 @@ class APP:
                          (1, 2):(1, 8),
                          (2, 2):(2, 8),
                          (3, 2):(3, 8),
+                         (0, 3):(0, 9),
+                         (1, 3):(1, 9),
+                         (2, 3):(2, 9),
+                         (3, 3):(3, 9),
                          }
       self.enemy_pos = {}
       self.effect = []
       self.camera = [0, 0]
       self.game_flag = 0
+      self.time = 0
       
       for m0 in range(160):
           for m1 in range(160):
               tile = pyxel.tilemap(0).pget(m1, m0)
               if tile in self.enemy_list:
-                  self.enemy_pos[(m1, m0)] = [5, tile]
-                    
-      pyxel.run(self.update, self.draw)
+                  self.enemy_pos[(m1, m0)] = [5, tile]      
      
-  def update(self):                      
+  def update(self):      
+      #if pyxel.btnp(pyxel.KEY_0):
+      #    pyxel.load('assets/assets.pyxres')
+                
       #Game Continue
       if self.game_flag == 0:
+          self.time += 1
           self.PlayerUpdate()
           self.EnemyUpdate()
       #Game Over
       elif self.game_flag == 99:
+          if pyxel.btnp(pyxel.KEY_R):
+              self.StatusSet()
+          elif pyxel.btnp(pyxel.KEY_Q):
+              pyxel.quit()
+              
           if len(self.effect) > 0:
               pass
           else:
@@ -182,6 +196,10 @@ class APP:
       pyxel.text(128, 48 + bp, "(" + str(int(self.player.p_x)) + "," + 
                  str(int(self.player.p_y)) + ")", 9)
       pyxel.text(128, 55 + bp, "Angle: " + str(self.player.p_angle * -1), 9)
+      
+      pyxel.text(128, 70 + bp, "Time: " 
+                 + str(int(int(self.time / 30) / 60)).zfill(2) 
+                 + ":" + str(int(int(self.time / 30) % 60)).zfill(2) , 9)
 
      
   def PlayerUpdate(self):
@@ -203,7 +221,24 @@ class APP:
                              self.player.p_angle)
               self.bullets.append(new_b)
                   
-              
+      #Attack Debug              
+      if pyxel.btn(pyxel.KEY_B):
+          if self.player.p_m == 1:
+              m = self.player.p_m_b
+          else:
+              m = self.player.p_m
+          if self.player.p_f > 50 :
+              b_num = (39 - self.player.p_f) * -1
+              print(b_num)
+              self.player.p_f = 0
+              for b in range(10):         
+                  for b2 in range(int(b_num / 10)):
+                      new_b = Bullet(self.player.p_x + 3 + self.camera[0],
+                                 self.player.p_y + 3 + self.camera[1],
+                                 m,
+                                 -5 + b)
+                      self.bullets.append(new_b)
+                
       if pyxel.btnp(pyxel.KEY_UP):
           self.player.CngAngle(-1)
       elif pyxel.btnp(pyxel.KEY_DOWN):
