@@ -41,21 +41,32 @@ class APP:
       self.enemy_pos = {}
       self.effect = []
       self.camera = [0, 0]
-      self.game_flag = 0
-      self.time = 0
-      
-      for m0 in range(160):
-          for m1 in range(160):
-              tile = pyxel.tilemap(0).pget(m1, m0)
-              if tile in self.enemy_list:
-                  self.enemy_pos[(m1, m0)] = [5, tile]      
+      self.game_flag = -1
+      self.tile = 0
+      self.time = 0      
      
   def update(self):      
       #if pyxel.btnp(pyxel.KEY_0):
       #    pyxel.load('assets/assets.pyxres')
                 
+      #Title Screen
+      if self.game_flag == -1:
+          if pyxel.btnp(pyxel.KEY_S):
+              self.game_flag = 0
+              #Enemy list create
+              for m0 in range(160):
+                  for m1 in range(160):
+                      tile = pyxel.tilemap(self.tile).pget(m1, m0)
+                      if tile in self.enemy_list:
+                          self.enemy_pos[(m1, m0)] = [5, tile]    
+          if pyxel.btnp(pyxel.KEY_RIGHT):
+              if self.tile < 2:
+                  self.tile += 1
+          elif pyxel.btnp(pyxel.KEY_LEFT):
+              if self.tile > 0:
+                  self.tile -= 1
       #Game Continue
-      if self.game_flag == 0:
+      elif self.game_flag == 0:
           self.time += 1
           self.PlayerUpdate()
           self.EnemyUpdate()
@@ -79,12 +90,12 @@ class APP:
           if self.player.p_f < 1:
               self.player.p_j = False
           else:    
-              if cD.check_move(self.player, 1, self.camera):
+              if cD.check_move(self.player, 1, self.camera, self.tile):
                   self.camera[1] -= 1
                   self.player.Jump()          
       #Fall Update
       else:          
-          if cD.check_move(self.player, 3, self.camera):
+          if cD.check_move(self.player, 3, self.camera, self.tile):
               self.camera[1] += 1
               self.player.Dawn()              
               
@@ -95,7 +106,7 @@ class APP:
           ety = eb.eb_y // 8
           ptx = self.player.p_x + self.camera[0]
           pty = self.player.p_y + self.camera[1]
-          e_tgt_tile = pyxel.tilemap(0).pget(etx, ety)
+          e_tgt_tile = pyxel.tilemap(self.tile).pget(etx, ety)
           if e_tgt_tile in self.enemy_list:
               pass
           elif e_tgt_tile[1] > 5:
@@ -119,14 +130,15 @@ class APP:
           b.update()          
           tx = b.b_x // 8
           ty = b.b_y // 8
-          tgt_tile = pyxel.tilemap(0).pget(tx, ty)
+          tgt_tile = pyxel.tilemap(self.tile).pget(tx, ty)
           if tgt_tile[1] > 5:
               pass
           elif tgt_tile in self.enemy_list:              
               self.enemy_pos[(tx, ty)][0] -= 1
               self.effect.append(Effect(b.b_x - 4, b.b_y, 0))
               if self.enemy_pos[(tx, ty)][0] < 1:
-                  pyxel.tilemap(0).pset(tx, ty, self.enemy_break[tgt_tile])
+                  pyxel.tilemap(self.tile).pset(tx, ty, 
+                                                self.enemy_break[tgt_tile])
                   self.effect.append(Effect(b.b_x - 4, b.b_y, 4))
               if b in self.bullets:
                   self.bullets.remove(b)
@@ -141,12 +153,23 @@ class APP:
           if ef.ef_t < 0:
               self.effect.remove(ef)
               
-
   def draw(self):
+      if self.game_flag == -1:
+          self.draw_title()
+      else:
+          self.draw_game_main()
+          
+  def draw_title(self):
+      pyxel.cls(0)
+      pyxel.text(5, 10, "Main_title", 9)
+      pyxel.text(5, 20, "Press S key to start", 9)
+      pyxel.text(5, 30, "MAP: " + str(self.tile), 9)
+
+  def draw_game_main(self):
       pyxel.cls(0)
       
       #Draw tilemap
-      pyxel.bltm(0, 0, 0, self.camera[0], self.camera[1], 128, 128, 15)
+      pyxel.bltm(0, 0, self.tile, self.camera[0], self.camera[1], 128, 128, 15)
       
       #Bullets draw////////////////////////////////////////////////////////
       for b in self.bullets:
@@ -261,7 +284,7 @@ class APP:
       if pyxel.btn(pyxel.KEY_RIGHT):
           self.player.p_m = 2
           self.player.p_c += 1          
-          if cD.check_move(self.player, 2, self.camera):
+          if cD.check_move(self.player, 2, self.camera, self.tile):
               if self.player.p_j == True:
                   self.player.p_x += 1
                   self.camera[0] += 1
@@ -272,7 +295,7 @@ class APP:
       elif pyxel.btn(pyxel.KEY_LEFT):
           self.player.p_m = 4
           self.player.p_c += 1          
-          if cD.check_move(self.player, 4, self.camera):
+          if cD.check_move(self.player, 4, self.camera, self.tile):
               if self.player.p_j == True:
                   self.player.p_x -= 1
                   self.camera[0] -= 1

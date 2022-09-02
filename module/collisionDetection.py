@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pyxel
 
-def check_move(player, x, c):
+def check_move(player, x, c, t):
     
     """
     Player coordinates
@@ -31,15 +31,15 @@ def check_move(player, x, c):
     px4 = int((player.p_x + c[0]) // 8)
     py4 = int((player.p_y + c[1] + 2) // 8)
       
-    pm1 = pyxel.tilemap(0).pget(px3, py)
-    pm2 = pyxel.tilemap(0).pget(px, py)
-    pm3 = pyxel.tilemap(0).pget(px3, py2)
-    pm4 = pyxel.tilemap(0).pget(px, py2)
+    pm1 = pyxel.tilemap(t).pget(px3, py)
+    pm2 = pyxel.tilemap(t).pget(px, py)
+    pm3 = pyxel.tilemap(t).pget(px3, py2)
+    pm4 = pyxel.tilemap(t).pget(px, py2)
       
-    pm5 = pyxel.tilemap(0).pget(px4, py3)
-    pm6 = pyxel.tilemap(0).pget(px2, py3)
-    pm7 = pyxel.tilemap(0).pget(px4, py4)
-    pm8 = pyxel.tilemap(0).pget(px2, py4)
+    pm5 = pyxel.tilemap(t).pget(px4, py3)
+    pm6 = pyxel.tilemap(t).pget(px2, py3)
+    pm7 = pyxel.tilemap(t).pget(px4, py4)
+    pm8 = pyxel.tilemap(t).pget(px2, py4)
      
     #collision detection
     #Move UP
