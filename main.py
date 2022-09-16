@@ -2,7 +2,7 @@
 #2D-action_game
 
 import pyxel
-from module import collisionDetection as cD, playerDraw as pD
+from module import collisionDetection as cD, playerDraw as pD, mapScan as mS
 
 class APP:
   def __init__(self):
@@ -39,11 +39,14 @@ class APP:
                          (3, 3):(3, 9),
                          }
       self.enemy_pos = {}
+      self.enemy_num = 0
       self.effect = []
       self.camera = [0, 0]
       self.game_flag = -1
       self.tile = 0
       self.time = 0      
+      self.map_data = []
+      self.map_data = mS.map_scan(self.tile)
      
   def update(self):      
       #if pyxel.btnp(pyxel.KEY_0):
@@ -59,12 +62,20 @@ class APP:
                       tile = pyxel.tilemap(self.tile).pget(m1, m0)
                       if tile in self.enemy_list:
                           self.enemy_pos[(m1, m0)] = [5, tile]    
+              self.enemy_num = 0
+              for md in self.map_data:
+                  self.enemy_num += md.count(2)
+                      
           if pyxel.btnp(pyxel.KEY_RIGHT):
               if self.tile < 2:
                   self.tile += 1
+              self.map_data = []
+              self.map_data = mS.map_scan(self.tile)
           elif pyxel.btnp(pyxel.KEY_LEFT):
               if self.tile > 0:
                   self.tile -= 1
+              self.map_data = []
+              self.map_data = mS.map_scan(self.tile)                  
       #Game Continue
       elif self.game_flag == 0:
           self.time += 1
@@ -140,6 +151,7 @@ class APP:
                   pyxel.tilemap(self.tile).pset(tx, ty, 
                                                 self.enemy_break[tgt_tile])
                   self.effect.append(Effect(b.b_x - 4, b.b_y, 4))
+                  self.enemy_num -= 1
               if b in self.bullets:
                   self.bullets.remove(b)
           else:              
@@ -161,9 +173,21 @@ class APP:
           
   def draw_title(self):
       pyxel.cls(0)
-      pyxel.text(5, 10, "Main_title", 9)
-      pyxel.text(5, 20, "Press S key to start", 9)
-      pyxel.text(5, 30, "MAP: " + str(self.tile), 9)
+      pyxel.rectb(0, 0, 180, 128, 1)  
+      pyxel.text(5, 8, "Main_title", 9)
+      pyxel.text(5, 18, "Press S key to start", 9)
+      pyxel.text(5, 28, "MAP: " + str(self.tile), 9)
+      map_draw_x = 5
+      map_draw_y = 36
+      pyxel.rectb(map_draw_x-1, map_draw_y-1, 91, 91, 9)
+      for md in range(len(self.map_data)):
+          for md2 in range(len(self.map_data[md])):
+              if self.map_data[md][md2] == 1:
+                  pyxel.rect(map_draw_x+md2 * 3, map_draw_y+md * 3, 2, 2, 5)
+              elif self.map_data[md][md2] == 2:
+                  pyxel.rect(map_draw_x+md2 * 3, map_draw_y+md * 3, 2, 2, 8)
+              if md2 == self.player.p_x // 8 and md == self.player.p_y // 8:
+                  pyxel.text(map_draw_x + md2 * 3, map_draw_y + md * 3, "P", 9)      
 
   def draw_game_main(self):
       pyxel.cls(0)
@@ -223,6 +247,7 @@ class APP:
       pyxel.text(128, 70 + bp, "Time: " 
                  + str(int(int(self.time / 30) / 60)).zfill(2) 
                  + ":" + str(int(int(self.time / 30) % 60)).zfill(2) , 9)
+      pyxel.text(128, 85 + bp, "enemys: " + str(self.enemy_num), 9)
 
      
   def PlayerUpdate(self):
