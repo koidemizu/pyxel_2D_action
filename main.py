@@ -6,7 +6,7 @@ from module import collisionDetection as cD, playerDraw as pD, mapScan as mS
 
 class APP:
   def __init__(self):
-      pyxel.init(180, 128, fps = 30,)      
+      pyxel.init(128, 128, fps = 30,)      
       self.StatusSet()                    
       pyxel.run(self.update, self.draw)
       
@@ -14,11 +14,10 @@ class APP:
       pyxel.load('assets/assets.pyxres')
       
       pyxel.mouse(False)
-      
-      type = 0
-      self.player = Player(type)
-      self.bullets = []
-      self.e_bullets = []
+      self.max_f = 100
+      self.max_a = 100
+      self.atk = 1
+      self.PlayerReset()
       self.enemy_list = [
                          (0, 1), (1, 1), (2, 1), (3, 1) ,
                          (0, 2), (1, 2), (2, 2), (3, 2) ,
@@ -38,54 +37,147 @@ class APP:
                          (2, 3):(2, 9),
                          (3, 3):(3, 9),
                          }
+      self.EnemyReset()
+      self.OtherReset()
+      self.game_flag = -1      
+      self.tile = 0 
+      self.EnemyListCreste()
+      self.title_col = 3
+      self.sel_upg = 1      
+      
+  def PlayerReset(self):
+      type = 0
+      self.player = Player(type, self.max_a, self.max_f, self.atk)    
+      
+  def EnemyReset(self):
       self.enemy_pos = {}
       self.enemy_num = 0
+      self.enemy_num_m = 0
+
+  def OtherReset(self):
       self.effect = []
       self.camera = [0, 0]
-      self.game_flag = -1
-      self.tile = 0
-      self.time = 0      
+      self.bullets = []
+      self.e_bullets = []
+      self.msg_y = -10      
+      self.time = 0
+      self.up_a = 0
+      self.up_f = 0
+      self.up_atk = 0
+      self.game_end = 0
+      
+  def EnemyListCreste(self):
       self.map_data = []
-      self.map_data = mS.map_scan(self.tile)
-     
-  def update(self):      
-      #if pyxel.btnp(pyxel.KEY_0):
-      #    pyxel.load('assets/assets.pyxres')
-                
+      self.map_data = mS.map_scan(self.tile)   
+      #Enemy list create
+      for m0 in range(160):
+          for m1 in range(160):
+              tile = pyxel.tilemap(self.tile).pget(m1, m0)
+              if tile in self.enemy_list:
+                  if tile[1] < 5:
+                      hp = 3 * tile[1]
+                  self.enemy_pos[(m1, m0)] = [hp, tile]    
+      self.enemy_num = 0
+      for md in self.map_data:
+          self.enemy_num += md.count(2)      
+      
+  def PlayerA_UP(self, num):
+      self.max_a += num
+    
+  def PlayerF_UP(self, num):
+      self.max_f += num    
+
+  def PlayerAtk_UP(self, num):
+      self.atk += num
+      
+  def update(self):              
       #Title Screen
       if self.game_flag == -1:
-          if pyxel.btnp(pyxel.KEY_S):
+          if (pyxel.btnp(pyxel.KEY_S) or 
+             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_X) or
+             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_Y) or
+             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A) or
+             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)
+             ):
               self.game_flag = 0
-              #Enemy list create
-              for m0 in range(160):
-                  for m1 in range(160):
-                      tile = pyxel.tilemap(self.tile).pget(m1, m0)
-                      if tile in self.enemy_list:
-                          self.enemy_pos[(m1, m0)] = [5, tile]    
-              self.enemy_num = 0
-              for md in self.map_data:
-                  self.enemy_num += md.count(2)
-                      
-          if pyxel.btnp(pyxel.KEY_RIGHT):
+              self.EnemyListCreste()
+          if (pyxel.btnp(pyxel.KEY_RIGHT) or 
+             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT)):
               if self.tile < 2:
                   self.tile += 1
               self.map_data = []
               self.map_data = mS.map_scan(self.tile)
-          elif pyxel.btnp(pyxel.KEY_LEFT):
+          elif (pyxel.btnp(pyxel.KEY_LEFT) or 
+             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT)):
               if self.tile > 0:
                   self.tile -= 1
               self.map_data = []
               self.map_data = mS.map_scan(self.tile)                  
       #Game Continue
       elif self.game_flag == 0:
-          self.time += 1
-          self.PlayerUpdate()
-          self.EnemyUpdate()
+          if self.msg_y < 150:
+              if self.game_end == 10:
+                  if self.msg_y < 50:
+                      self.msg_y += 1
+              else:
+                  self.msg_y += 1          
+          if self.game_end == 10:
+              self.player.p_m2 = 0
+              if (pyxel.btnp(pyxel.KEY_S) or 
+                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_X) or
+                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_Y) or
+                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A) or
+                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)
+                 ):
+                  if self.sel_upg == 1:
+                      self.PlayerA_UP(self.up_a)
+                      self.PlayerReset()
+                      self.EnemyReset()
+                      self.OtherReset()
+                      self.EnemyListCreste()
+                  elif self.sel_upg == 2:
+                      self.PlayerF_UP(self.up_f)
+                      self.PlayerReset()
+                      self.EnemyReset()
+                      self.OtherReset()
+                      self.EnemyListCreste()
+                  elif self.sel_upg == 3:
+                      self.PlayerAtk_UP(self.up_atk)
+                      self.PlayerReset()
+                      self.EnemyReset()
+                      self.OtherReset()
+                      self.EnemyListCreste()
+              
+              if (pyxel.btnp(pyxel.KEY_UP) or 
+                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_UP)):
+                  if self.sel_upg > 1:
+                      self.sel_upg -= 1              
+              elif (pyxel.btnp(pyxel.KEY_DOWN) or 
+                  pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_DOWN)):
+                  if self.sel_upg < 3:
+                      self.sel_upg += 1
+          else:              
+              self.time += 1
+              self.PlayerUpdate()
+              self.EnemyUpdate()
+          if pyxel.btnp(pyxel.KEY_4):                            
+              self.game_end = 10
+              self.msg_y = 0
+              self.up_a = pyxel.rndi(10, 20)
+              self.up_f = pyxel.rndi(10, 20)
+              self.up_atk = pyxel.rndi(1, 5)
+          if pyxel.btnp(pyxel.KEY_0):
+              self.PlayerReset()
+              self.EnemyReset()
+              self.OtherReset()
+              self.EnemyListCreste()
       #Game Over
       elif self.game_flag == 99:
-          if pyxel.btnp(pyxel.KEY_R):
+          if (pyxel.btnp(pyxel.KEY_R) or 
+             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)):
               self.StatusSet()
-          elif pyxel.btnp(pyxel.KEY_Q):
+          elif (pyxel.btnp(pyxel.KEY_Q) or 
+               pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A)):
               pyxel.quit()
               
           if len(self.effect) > 0:
@@ -145,13 +237,24 @@ class APP:
           if tgt_tile[1] > 5:
               pass
           elif tgt_tile in self.enemy_list:              
-              self.enemy_pos[(tx, ty)][0] -= 1
+              self.enemy_pos[(tx, ty)][0] -= self.player.p_atk
               self.effect.append(Effect(b.b_x - 4, b.b_y, 0))
               if self.enemy_pos[(tx, ty)][0] < 1:
                   pyxel.tilemap(self.tile).pset(tx, ty, 
                                                 self.enemy_break[tgt_tile])
                   self.effect.append(Effect(b.b_x - 4, b.b_y, 4))
                   self.enemy_num -= 1
+                  if (self.enemy_num == 10 or self.enemy_num == 5 
+                     or self.enemy_num == 1):
+                      self.msg_y = -10
+                      self.enemy_num_m = self.enemy_num
+                  if self.enemy_num <= 0:
+                      self.game_end = 10
+                      self.msg_y = -10     
+                      self.sel_upg = 1
+                      self.up_a = pyxel.rndi(10, 20)
+                      self.up_f = pyxel.rndi(10, 20)
+                      self.up_atk = pyxel.rndi(1, 5)                      
               if b in self.bullets:
                   self.bullets.remove(b)
           else:              
@@ -173,12 +276,18 @@ class APP:
           
   def draw_title(self):
       pyxel.cls(0)
-      pyxel.rectb(0, 0, 180, 128, 1)  
-      pyxel.text(5, 8, "Main_title", 9)
-      pyxel.text(5, 18, "Press S key to start", 9)
-      pyxel.text(5, 28, "MAP: " + str(self.tile), 9)
+      pyxel.rectb(0, 0, 128, 128, 1)  
+      pyxel.text(2, 3, "Target_Shooting", 9)      
+      if pyxel.frame_count % 60 == 0:
+          if self.title_col == 3:
+              self.title_col = 11
+          else:
+              self.title_col = 3     
+      pyxel.text(2, 10, "Press S or Any GamePad Button", self.title_col)      
+      pyxel.text(2, 17, "MAP: " + str(self.tile), 9)
+      pyxel.text(2, 24, "Right and left keys: Select Map", 6)
       map_draw_x = 5
-      map_draw_y = 36
+      map_draw_y = 37
       pyxel.rectb(map_draw_x-1, map_draw_y-1, 91, 91, 9)
       for md in range(len(self.map_data)):
           for md2 in range(len(self.map_data[md])):
@@ -190,7 +299,7 @@ class APP:
                   pyxel.text(map_draw_x + md2 * 3, map_draw_y + md * 3, "P", 9)      
 
   def draw_game_main(self):
-      pyxel.cls(0)
+      pyxel.cls(0)            
       
       #Draw tilemap
       pyxel.bltm(0, 0, self.tile, self.camera[0], self.camera[1], 128, 128, 15)
@@ -216,47 +325,57 @@ class APP:
       #Player draw////////////////////////////////////////////////////
       #Game Continue
       if self.game_flag == 0:          
-          pD.player_draw(self.player)
+          pD.player_draw(self.player, self.max_a, self.max_f)
       #Game Over
       elif self.game_flag == 99:
           x = self.player.p_x
           y = self.player.p_y  
           pyxel.blt(x, y, 0, 0, 32, 8, 8, 15)     
           
-      #Info//////////////////////////////////////////////////////////
       pyxel.rectb(0, 0, 128, 128, 1)      
-      pyxel.rect(128, 0, 53, 128, 0)
-      pyxel.rectb(127, 0, 53, 128, 1)
-      bp = 2
-
-      pyxel.text(128, 0 + bp, "Armor", 9)
-      pyxel.rectb(128, 7 + bp, 51, 10, 9)
-      for hp in range(self.player.p_hp // 4):
-          pyxel.rect(128 + hp * 2, 10 + bp, 1, 4, 9)
-          
-      pyxel.text(128, 22 + bp, "Energy", 9)
-      pyxel.rectb(128, 29 + bp, 51, 10, 9)
-      for fuel in range(self.player.p_f // 4):
-          pyxel.rect(128 + fuel * 2, 32 + bp, 1, 4, 9)                   
-          
-      pyxel.text(128, 40 + bp, "coordinate", 9)
-      pyxel.text(128, 48 + bp, "(" + str(int(self.player.p_x)) + "," + 
-                 str(int(self.player.p_y)) + ")", 9)
-      pyxel.text(128, 55 + bp, "Angle: " + str(self.player.p_angle * -1), 9)
       
-      pyxel.text(128, 70 + bp, "Time: " 
-                 + str(int(int(self.time / 30) / 60)).zfill(2) 
-                 + ":" + str(int(int(self.time / 30) % 60)).zfill(2) , 9)
-      pyxel.text(128, 85 + bp, "enemys: " + str(self.enemy_num), 9)
+      #Messages///////////////////////////////////////////////////////////
+      if self.game_end == 10:
+        pyxel.rect(1, self.msg_y - 3, 126, 80, 0)
+        pyxel.rectb(1, self.msg_y - 3, 126, 80, 7)
+        pyxel.text(45, self.msg_y,"Map clear!",1)
+        pyxel.text(46, self.msg_y,"Map clear!",10)      
+        if self.msg_y > 49:
+            pyxel.text(4, 60,"Select upgrade",7)
+            pyxel.text(4, 70,"and go to the next map.",7)
+            pyxel.text(4, 80, "Up and Down keys: Select", 6)
+            pyxel.text(24, 90,"1: Armor + " + str(self.up_a),7)
+            pyxel.text(24, 100,"2: Fuel + " + str(self.up_f),7)
+            pyxel.text(24, 110,"3: Attack Power + " + str(self.up_atk),7)
+            pyxel.text(4, 119, "Press S or Any GamePad Button", 6)     
+            pyxel.blt(15, 90+((self.sel_upg-1) * 10) - 1, 1, 16, 0, 8, 8, 15)
+      elif (self.enemy_num_m == 10 or self.enemy_num_m == 5 
+         or self.enemy_num_m == 1):        
+          pyxel.text(29, self.msg_y,"Remaining targets: " + 
+                     str(self.enemy_num),1)
+          pyxel.text(30, self.msg_y,"Remaining targets: " + 
+                     str(self.enemy_num),10)
+      else:
+        pyxel.text(29, self.msg_y, "Destroy all targets.", 1)
+        pyxel.text(30, self.msg_y, "Destroy all targets.", 10)          
+      
+      
+      #Debug//////////////////////////////////////////////////////////
+      #pyxel.rect(4, 4, 20, 30, 0)
+      #pyxel.text(5, 5, "hp" + str(self.player.p_hp), 7)      
+      #pyxel.text(5, 15, "fl" + str(self.player.p_f), 7)      
+      #pyxel.text(5, 25, "atk" + str(self.player.p_atk), 7)           
 
      
   def PlayerUpdate(self):
+      self.player.p_af = False
+      
       #Energy Recover
-      if self.player.p_f < 101:
+      if self.player.p_f < self.max_f + 1:
           self.player.p_f += 1
           
       #Player Attack
-      if pyxel.btn(pyxel.KEY_V):
+      if pyxel.btn(pyxel.KEY_V) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_A):
           if self.player.p_m == 1:
               m = self.player.p_m_b
           else:
@@ -287,13 +406,19 @@ class APP:
                                  -5 + b)
                       self.bullets.append(new_b)
                 
-      if pyxel.btnp(pyxel.KEY_UP):
+      if (pyxel.btnp(pyxel.KEY_UP) or 
+          pyxel.btnp(pyxel.GAMEPAD1_BUTTON_Y)):
           self.player.CngAngle(-1)
-      elif pyxel.btnp(pyxel.KEY_DOWN):
-          self.player.CngAngle(1)              
+          self.player.p_af = True
+
+      elif (pyxel.btnp(pyxel.KEY_DOWN) or 
+            pyxel.btnp(pyxel.GAMEPAD1_BUTTON_X)):
+          self.player.CngAngle(1)   
+          self.player.p_af = True           
           
       #Jump
-      if pyxel.btn(pyxel.KEY_SPACE):
+      if (pyxel.btn(pyxel.KEY_SPACE) or 
+         pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_UP)):
          if self.player.p_j == False and self.player.p_f > 10:
               if self.player.p_m == 1:
                   pass
@@ -306,7 +431,8 @@ class APP:
           self.player.p_j = False
           
       #Move RIGHT
-      if pyxel.btn(pyxel.KEY_RIGHT):
+      if (pyxel.btn(pyxel.KEY_RIGHT) or 
+         pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT)):
           self.player.p_m = 2
           self.player.p_c += 1          
           if cD.check_move(self.player, 2, self.camera, self.tile):
@@ -317,7 +443,8 @@ class APP:
                   self.player.p_x += 1
                   self.camera[0] += 1
       #Move LEFT       
-      elif pyxel.btn(pyxel.KEY_LEFT):
+      elif (pyxel.btn(pyxel.KEY_LEFT) or 
+            pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT)):
           self.player.p_m = 4
           self.player.p_c += 1          
           if cD.check_move(self.player, 4, self.camera, self.tile):
@@ -376,8 +503,8 @@ class APP:
               
               
 class Player:
-    def __init__(self, type):
-        self.p_hp = 100
+    def __init__(self, type, ma, mf, atk):
+        self.p_hp = ma
         self.p_x = 8
         self.p_y = 8
         self.p_m = 2
@@ -385,9 +512,11 @@ class Player:
         self.p_m2 = 0
         self.p_c = 0        
         self.p_j = False
-        self.p_f = 100
+        self.p_f = mf
         self.p_t = type
         self.p_angle = 0
+        self.p_af = False
+        self.p_atk = atk
         
     def Jump(self):
         self.p_y -= 1

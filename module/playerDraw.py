@@ -1,10 +1,29 @@
 # -*- coding: utf-8 -*-
 import pyxel
 
-def player_draw(player):
+def player_draw(player, ma, mf):
     x = player.p_x
     y = player.p_y      
     t = player.p_t * 32
+    for hp in range(player.p_hp // int(ma / 10)):
+        pyxel.rect(x + hp - 1, y - 6, 1, 1, 10)
+    for fl in range(player.p_f // int(mf / 10)):
+        pyxel.rect(x + fl - 1, y - 4, 1, 1, 8)        
+    
+    if player.p_af == True:
+        if player.p_m == 1:
+              afm = player.p_m_b
+        else:
+              afm = player.p_m
+        if afm == 4:
+            w1 = 4
+            w2 = -11
+        else:
+            w1 = 4
+            w2 = 15
+        pyxel.line(player.p_x + w1 , player.p_y + 3,
+                   player.p_x + w2,
+                   player.p_y + 3 + player.p_angle * 5, 8)
     #Jump
     if player.p_j == True:          
         player.p_m2 += 1          
