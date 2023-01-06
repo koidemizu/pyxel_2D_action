@@ -20,22 +20,50 @@ class APP:
       self.PlayerReset()
       self.enemy_list = [
                          (0, 1), (1, 1), (2, 1), (3, 1) ,
+                         (4, 1), (5, 1), (6, 1), (7, 1) , (8, 1) ,
                          (0, 2), (1, 2), (2, 2), (3, 2) ,
+                         (4, 2), (5, 2), (6, 2), (7, 2) , (8, 2) ,
                          (0, 3), (1, 3), (2, 3), (3, 3) ,
+                         (4, 3), (5, 3), (6, 3), (7, 3) , (8, 3) ,
+                         (0, 4), (1, 4), (2, 4), (3, 4) ,
+                         (4, 4), (5, 4) ,(6, 4), (7, 4) ,
                         ]      
       self.enemy_break = {
                          (0, 1):(0, 7),
                          (1, 1):(1, 7),
                          (2, 1):(2, 7),
                          (3, 1):(3, 7),
+                         (4, 1):(4, 7),
+                         (5, 1):(4, 7),
+                         (6, 1):(4, 7),
+                         (7, 1):(4, 7),
+                         (8, 1):(4, 7),
                          (0, 2):(0, 8),
                          (1, 2):(1, 8),
                          (2, 2):(2, 8),
                          (3, 2):(3, 8),
+                         (4, 2):(4, 7),
+                         (5, 2):(4, 7),
+                         (6, 2):(4, 7),
+                         (7, 2):(4, 7),                         
+                         (8, 2):(4, 7),                         
                          (0, 3):(0, 9),
                          (1, 3):(1, 9),
                          (2, 3):(2, 9),
                          (3, 3):(3, 9),
+                         (4, 3):(4, 7),
+                         (5, 3):(4, 7),
+                         (6, 3):(4, 7),
+                         (7, 3):(4, 7),                         
+                         (8, 3):(4, 7),
+                         (0, 4):(4, 7),
+                         (1, 4):(4, 7),
+                         (2, 4):(4, 7),
+                         (3, 4):(4, 7),
+                         (4, 4):(4, 7),
+                         (5, 4):(4, 7),
+                         (6, 4):(4, 7),
+                         (7, 4):(4, 7),
                          }
       self.EnemyReset()
       self.OtherReset()
@@ -65,19 +93,32 @@ class APP:
       self.up_f = 0
       self.up_atk = 0
       self.game_end = 0
+      self.sel_upg = 1
       
   def EnemyListCreste(self):
+      self.enemy_pos = {}
       self.map_data = []
       self.map_data = mS.map_scan(self.tile)   
       #Enemy list create
       for m0 in range(160):
           for m1 in range(160):
-              tile = pyxel.tilemap(self.tile).pget(m1, m0)
+              tile = pyxel.tilemap(self.tile).pget(m1, m0)              
               if tile in self.enemy_list:
-                  if tile[1] < 5:
-                      hp = 3 * tile[1]
+                  if tile[1] == 4:
+                      if tile[0] < 8:
+                          hp = 20
+                  elif tile[0] < 5:
+                      if tile[0] == 0:
+                          t0 = 1
+                      else:
+                          t0 = 1
+                          
+                      if tile[0] > 4:
+                          hp = 10 * tile[1] * t0 * (1 + (self.tile * 0.5))
+                      else:
+                          hp = 5 * tile[1] * t0 * (1 + (self.tile * 0.5))
                   self.enemy_pos[(m1, m0)] = [hp, tile]    
-      self.enemy_num = 0
+      self.enemy_num = 0      
       for md in self.map_data:
           self.enemy_num += md.count(2)      
       
@@ -90,7 +131,8 @@ class APP:
   def PlayerAtk_UP(self, num):
       self.atk += num
       
-  def update(self):              
+  def update(self):     
+          
       #Title Screen
       if self.game_flag == -1:
           if (pyxel.btnp(pyxel.KEY_S) or 
@@ -101,18 +143,18 @@ class APP:
              ):
               self.game_flag = 0
               self.EnemyListCreste()
-          if (pyxel.btnp(pyxel.KEY_RIGHT) or 
-             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT)):
-              if self.tile < 2:
-                  self.tile += 1
-              self.map_data = []
-              self.map_data = mS.map_scan(self.tile)
-          elif (pyxel.btnp(pyxel.KEY_LEFT) or 
-             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT)):
-              if self.tile > 0:
-                  self.tile -= 1
-              self.map_data = []
-              self.map_data = mS.map_scan(self.tile)                  
+          #if (pyxel.btnp(pyxel.KEY_RIGHT) or 
+          #   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT)):
+          #    if self.tile < 2:
+          #        self.tile += 1
+          #    self.map_data = []
+          #    self.map_data = mS.map_scan(self.tile)
+          #elif (pyxel.btnp(pyxel.KEY_LEFT) or 
+          #   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT)):
+          #    if self.tile > 0:
+          #        self.tile -= 1
+          #    self.map_data = []
+          #    self.map_data = mS.map_scan(self.tile)                  
       #Game Continue
       elif self.game_flag == 0:
           if self.msg_y < 150:
@@ -130,18 +172,21 @@ class APP:
                  pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)
                  ):
                   if self.sel_upg == 1:
+                      self.tile += 1
                       self.PlayerA_UP(self.up_a)
                       self.PlayerReset()
                       self.EnemyReset()
                       self.OtherReset()
                       self.EnemyListCreste()
                   elif self.sel_upg == 2:
+                      self.tile += 1
                       self.PlayerF_UP(self.up_f)
                       self.PlayerReset()
                       self.EnemyReset()
                       self.OtherReset()
                       self.EnemyListCreste()
                   elif self.sel_upg == 3:
+                      self.tile += 1
                       self.PlayerAtk_UP(self.up_atk)
                       self.PlayerReset()
                       self.EnemyReset()
@@ -165,7 +210,7 @@ class APP:
               self.msg_y = 0
               self.up_a = pyxel.rndi(10, 20)
               self.up_f = pyxel.rndi(10, 20)
-              self.up_atk = pyxel.rndi(1, 5)
+              self.up_atk = pyxel.rndi(1, 2)
           if pyxel.btnp(pyxel.KEY_0):
               self.PlayerReset()
               self.EnemyReset()
@@ -222,7 +267,7 @@ class APP:
           if (eb.eb_x > ptx and eb.eb_x < ptx + 7 and
                 eb.eb_y > pty and eb.eb_y < pty + 7):              
               self.effect.append(Effect(eb.eb_x - 4, eb.eb_y - 2, 0))
-              if self.player.Damage(2) == False:
+              if self.player.Damage(int(2 + (1 + (self.tile * 0.5)))) == False:
                   self.game_flag = 99
                   self.player.p_j = False
               if eb in self.e_bullets:
@@ -284,10 +329,11 @@ class APP:
           else:
               self.title_col = 3     
       pyxel.text(2, 10, "Press S or Any GamePad Button", self.title_col)      
-      pyxel.text(2, 17, "MAP: " + str(self.tile), 9)
-      pyxel.text(2, 24, "Right and left keys: Select Map", 6)
+      pyxel.text(2, 20, "MAP: " + str(self.tile), 9)
+      #pyxel.text(2, 24, "Right and left keys: Select Map", 6)
+      
       map_draw_x = 5
-      map_draw_y = 37
+      map_draw_y = 30
       pyxel.rectb(map_draw_x-1, map_draw_y-1, 91, 91, 9)
       for md in range(len(self.map_data)):
           for md2 in range(len(self.map_data[md])):
@@ -464,11 +510,18 @@ class APP:
 
   def EnemyUpdate(self):
       #Enemy
-      for enemy in self.enemy_pos:
+      active_enemy = 0
+      for enemy in self.enemy_pos:          
+          ecn = pyxel.rndi(1, 5)
+          
+          if self.enemy_pos[enemy][1][1] < 4:
+              if self.enemy_pos[enemy][0] > 0:
+                  active_enemy += 1
+              
           if  self.enemy_pos[enemy][0] < 1:
               pass
-          #Attack action
-          elif pyxel.frame_count % (30 - self.enemy_pos[enemy][1][1] * 3) == 0:              
+          #Attack action          
+          elif pyxel.frame_count % (30-self.enemy_pos[enemy][1][1] * ecn) == 0:              
               enm_x = enemy[0] * 8
               enm_y = enemy[1] * 8
               pre_x = self.player.p_x + self.camera[0]
@@ -489,18 +542,66 @@ class APP:
                   if ang > 0:
                       ang = 3
                   elif ang < 0:
-                      ang = -3    
-              if dist_x < 50 and dist_y < 50:
-                  if enm_x > pre_x:
-                      new_e_bullet = EnemyBullet(enm_x + 3,
-                                                 enm_y + 3,
-                                                 4, ang, spd)
-                  else:
-                      new_e_bullet = EnemyBullet(enm_x + 3,
-                                                 enm_y + 3,
-                                                 2, ang, spd)
-                  self.e_bullets.append(new_e_bullet)
+                      ang = -3 
+                            
+              if  self.enemy_pos[enemy][1][0] < 5:
+                  vx = 50
+                  vy = 50
+              elif self.enemy_pos[enemy][1][0] in [5, 6, 7, 8]:                  
+                  vx = 150
+                  vy = 150
               
+              if dist_x < vx and dist_y < vy:
+                  if self.enemy_pos[enemy][1][1] == 4:
+                        pass
+                  else:
+                      if  self.enemy_pos[enemy][1][0] < 5:
+                          if enm_x > pre_x:
+                              new_e_bullet = EnemyBullet(enm_x + 3,
+                                                     enm_y + 3,
+                                                     4, ang, spd)
+                          else:
+                              new_e_bullet = EnemyBullet(enm_x + 3,
+                                                     enm_y + 3,
+                                                     2, ang, spd)
+                          self.e_bullets.append(new_e_bullet)
+                      elif self.enemy_pos[enemy][1][0] in [5, 6, 7, 8]:
+                      
+                          if enm_x > pre_x:
+                              new_e_bullet = EnemyBullet(enm_x + 3,
+                                                     enm_y + 3,
+                                                     4, ang, spd)
+                          else:
+                              new_e_bullet = EnemyBullet(enm_x + 3,
+                                                     enm_y + 3,
+                                                     2, ang, spd)
+                          self.e_bullets.append(new_e_bullet)
+                      
+                          se = pyxel.rndi(1, 5)
+                          senum = pyxel.rndi(4, 8)
+                          if se < 2:
+                              for sei in range(senum):
+                                  if sei % 2 == 0:
+                                      i_v = 2
+                                  else:
+                                      i_v = 4
+                                  
+                                  a_i = pyxel.rndi(-4, 4)
+                                  new_e_bullet = EnemyBullet(enm_x + 3,
+                                                         enm_y + 3,
+                                                         i_v, a_i, spd)
+                                  self.e_bullets.append(new_e_bullet)
+      print(active_enemy)   
+      if  active_enemy < 1:
+          for ene_del in self.enemy_pos:
+              self.enemy_pos[enemy][0] = 0
+          self.enemy_num = 0
+          self.game_end = 10
+          self.msg_y = -10     
+          self.sel_upg = 1
+          self.up_a = pyxel.rndi(10, 20)
+          self.up_f = pyxel.rndi(10, 20)
+          self.up_atk = pyxel.rndi(1, 5)                    
               
 class Player:
     def __init__(self, type, ma, mf, atk):
