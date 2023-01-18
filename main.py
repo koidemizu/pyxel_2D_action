@@ -14,6 +14,7 @@ class APP:
       pyxel.load('assets/assets.pyxres')
       
       pyxel.mouse(False)
+      self.final_map = 3
       self.max_f = 100
       self.max_a = 100
       self.atk = 1
@@ -106,12 +107,13 @@ class APP:
               if tile in self.enemy_list:
                   if tile[1] == 4:
                       if tile[0] < 8:
-                          hp = 20
-                  elif tile[0] < 5:
-                      if tile[0] == 0:
-                          t0 = 1
-                      else:
-                          t0 = 1
+                          hp = 5
+                  else:
+                      t0 = 1
+                      #if tile[0] == 0:
+                      #    t0 = 1
+                      #else:
+                      #    t0 = 1
                           
                       if tile[0] > 4:
                           hp = 10 * tile[1] * t0 * (1 + (self.tile * 0.5))
@@ -164,43 +166,47 @@ class APP:
               else:
                   self.msg_y += 1          
           if self.game_end == 10:
-              self.player.p_m2 = 0
-              if (pyxel.btnp(pyxel.KEY_S) or 
-                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_X) or
-                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_Y) or
-                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A) or
-                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)
-                 ):
-                  if self.sel_upg == 1:
-                      self.tile += 1
-                      self.PlayerA_UP(self.up_a)
-                      self.PlayerReset()
-                      self.EnemyReset()
-                      self.OtherReset()
-                      self.EnemyListCreste()
-                  elif self.sel_upg == 2:
-                      self.tile += 1
-                      self.PlayerF_UP(self.up_f)
-                      self.PlayerReset()
-                      self.EnemyReset()
-                      self.OtherReset()
-                      self.EnemyListCreste()
-                  elif self.sel_upg == 3:
-                      self.tile += 1
-                      self.PlayerAtk_UP(self.up_atk)
-                      self.PlayerReset()
-                      self.EnemyReset()
-                      self.OtherReset()
-                      self.EnemyListCreste()
+              if self.tile == self.final_map:
+                self.game_flag = 100
+                self.msg_y = -10
+              else:
+                self.player.p_m2 = 0
+                if (pyxel.btnp(pyxel.KEY_S) or 
+                   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_X) or
+                   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_Y) or
+                   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A) or
+                   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)
+                   ):
+                    if self.sel_upg == 1:
+                        self.tile += 1
+                        self.PlayerA_UP(self.up_a)
+                        self.PlayerReset()
+                        self.EnemyReset()
+                        self.OtherReset()
+                        self.EnemyListCreste()
+                    elif self.sel_upg == 2:
+                        self.tile += 1
+                        self.PlayerF_UP(self.up_f)
+                        self.PlayerReset()
+                        self.EnemyReset()
+                        self.OtherReset()
+                        self.EnemyListCreste()
+                    elif self.sel_upg == 3:
+                        self.tile += 1
+                        self.PlayerAtk_UP(self.up_atk)
+                        self.PlayerReset()
+                        self.EnemyReset()
+                        self.OtherReset()
+                        self.EnemyListCreste()
               
-              if (pyxel.btnp(pyxel.KEY_UP) or 
-                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_UP)):
-                  if self.sel_upg > 1:
-                      self.sel_upg -= 1              
-              elif (pyxel.btnp(pyxel.KEY_DOWN) or 
-                  pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_DOWN)):
-                  if self.sel_upg < 3:
-                      self.sel_upg += 1
+                if (pyxel.btnp(pyxel.KEY_UP) or 
+                   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_UP)):
+                    if self.sel_upg > 1:
+                        self.sel_upg -= 1              
+                elif (pyxel.btnp(pyxel.KEY_DOWN) or 
+                    pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_DOWN)):
+                    if self.sel_upg < 3:
+                        self.sel_upg += 1
           else:              
               self.time += 1
               self.PlayerUpdate()
@@ -211,25 +217,29 @@ class APP:
               self.up_a = pyxel.rndi(10, 20)
               self.up_f = pyxel.rndi(10, 20)
               self.up_atk = pyxel.rndi(1, 2)
+          if pyxel.btnp(pyxel.KEY_5):
+              self.game_flag = 99
           if pyxel.btnp(pyxel.KEY_0):
               self.PlayerReset()
               self.EnemyReset()
               self.OtherReset()
               self.EnemyListCreste()
       #Game Over
-      elif self.game_flag == 99:
-          if (pyxel.btnp(pyxel.KEY_R) or 
-             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)):
-              self.StatusSet()
-          elif (pyxel.btnp(pyxel.KEY_Q) or 
-               pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A)):
-              pyxel.quit()
-              
-          if len(self.effect) > 0:
-              pass
-          else:
-              self.effect.append(Effect(self.player.p_x + self.camera[0] - 2, 
-                                    self.player.p_y + self.camera[1] - 3, 2))                 
+      elif self.game_flag == 99 or self.game_flag == 100:
+          if (pyxel.btnp(pyxel.KEY_S) or 
+                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_X) or
+                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_Y) or
+                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A) or
+                 pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)
+                 ):
+              self.StatusSet()          
+        
+          if self.game_flag == 99:
+            if len(self.effect) > 0:
+                pass
+            else:
+                self.effect.append(Effect(self.player.p_x + self.camera[0] - 2, 
+                                      self.player.p_y + self.camera[1] - 3, 2))                 
 
       #Jump Update
       if self.player.p_j == True:          
@@ -316,8 +326,12 @@ class APP:
   def draw(self):
       if self.game_flag == -1:
           self.draw_title()
-      else:
+      else:          
           self.draw_game_main()
+          if self.game_flag == 99:
+              self.draw_game_over()  
+          elif self.game_flag == 100:
+              self.draw_game_clear()  
           
   def draw_title(self):
       pyxel.cls(0)
@@ -342,7 +356,29 @@ class APP:
               elif self.map_data[md][md2] == 2:
                   pyxel.rect(map_draw_x+md2 * 3, map_draw_y+md * 3, 2, 2, 8)
               if md2 == self.player.p_x // 8 and md == self.player.p_y // 8:
-                  pyxel.text(map_draw_x + md2 * 3, map_draw_y + md * 3, "P", 9)      
+                  pyxel.text(map_draw_x + md2 * 3, map_draw_y + md * 3, "P", 9) 
+
+  def draw_game_over(self):
+      gsx = 45
+      gsy = 50
+      pyxel.rect(0, gsy - 3, 128, 30, 0)
+      pyxel.rectb(0, gsy - 3, 128, 30, 7)
+
+      pyxel.text(gsx - 1, gsy + 1, "GAME OVER!!", 1)      
+      pyxel.text(gsx, gsy, "GAME OVER!!", 8)      
+      
+      pyxel.text(4, gsy + 10, "Press S or Any GamePad Button", 9)                          
+
+  def draw_game_clear(self):
+      gsx = 35
+      gsy = 50
+      pyxel.rect(0, gsy - 3, 128, 35, 0)
+      pyxel.rectb(0, gsy - 3, 128, 35, 7)
+
+      pyxel.text(gsx, gsy, "ALL MAP CLEAR!!", 10)      
+      pyxel.text(4, gsy+10, "Thank you for playing", 6)      
+      
+      pyxel.text(4, gsy + 20, "Press S or Any GamePad Button", 6)         
 
   def draw_game_main(self):
       pyxel.cls(0)            
@@ -380,8 +416,8 @@ class APP:
           
       pyxel.rectb(0, 0, 128, 128, 1)      
       
-      #Messages///////////////////////////////////////////////////////////
-      if self.game_end == 10:
+      #Messages///////////////////////////////////////////////////////////      
+      if self.game_end == 10 and self.game_flag < 100:
         pyxel.rect(1, self.msg_y - 3, 126, 80, 0)
         pyxel.rectb(1, self.msg_y - 3, 126, 80, 7)
         pyxel.text(45, self.msg_y,"Map clear!",1)
@@ -441,8 +477,7 @@ class APP:
           else:
               m = self.player.p_m
           if self.player.p_f > 50 :
-              b_num = (39 - self.player.p_f) * -1
-              print(b_num)
+              b_num = (39 - self.player.p_f) * -1              
               self.player.p_f = 0
               for b in range(10):         
                   for b2 in range(int(b_num / 10)):
@@ -590,8 +625,7 @@ class APP:
                                   new_e_bullet = EnemyBullet(enm_x + 3,
                                                          enm_y + 3,
                                                          i_v, a_i, spd)
-                                  self.e_bullets.append(new_e_bullet)
-      print(active_enemy)   
+                                  self.e_bullets.append(new_e_bullet)      
       if  active_enemy < 1:
           for ene_del in self.enemy_pos:
               self.enemy_pos[enemy][0] = 0
