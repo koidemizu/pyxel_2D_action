@@ -14,7 +14,7 @@ class APP:
       pyxel.load('assets/assets.pyxres')
       
       pyxel.mouse(False)
-      self.final_map = 3
+      self.final_map = 4
       self.max_f = 100
       self.max_a = 100
       self.atk = 1
@@ -82,6 +82,7 @@ class APP:
       self.enemy_pos = {}
       self.enemy_num = 0
       self.enemy_num_m = 0
+      self.active_enemy = 0
 
   def OtherReset(self):
       self.effect = []
@@ -143,20 +144,23 @@ class APP:
              pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A) or
              pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)
              ):
+              self.tile = 0
+              self.map_data = []
+              self.map_data = mS.map_scan(self.tile)              
               self.game_flag = 0
               self.EnemyListCreste()
-          #if (pyxel.btnp(pyxel.KEY_RIGHT) or 
-          #   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT)):
-          #    if self.tile < 2:
-          #        self.tile += 1
-          #    self.map_data = []
-          #    self.map_data = mS.map_scan(self.tile)
-          #elif (pyxel.btnp(pyxel.KEY_LEFT) or 
-          #   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT)):
-          #    if self.tile > 0:
-          #        self.tile -= 1
-          #    self.map_data = []
-          #    self.map_data = mS.map_scan(self.tile)                  
+          if (pyxel.btnp(pyxel.KEY_RIGHT) or 
+             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT)):
+              if self.tile < self.final_map:
+                  self.tile += 1
+              self.map_data = []
+              self.map_data = mS.map_scan(self.tile)
+          elif (pyxel.btnp(pyxel.KEY_LEFT) or 
+             pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT)):
+              if self.tile > 0:
+                  self.tile -= 1
+              self.map_data = []
+              self.map_data = mS.map_scan(self.tile)                  
       #Game Continue
       elif self.game_flag == 0:
           if self.msg_y < 150:
@@ -299,10 +303,10 @@ class APP:
                                                 self.enemy_break[tgt_tile])
                   self.effect.append(Effect(b.b_x - 4, b.b_y, 4))
                   self.enemy_num -= 1
-                  if (self.enemy_num == 10 or self.enemy_num == 5 
-                     or self.enemy_num == 1):
-                      self.msg_y = -10
-                      self.enemy_num_m = self.enemy_num
+                  #if (self.enemy_num == 10 or self.enemy_num == 5 
+                  #   or self.enemy_num == 1):
+                  #    self.msg_y = -10
+                  #    self.enemy_num_m = self.enemy_num
                   if self.enemy_num <= 0:
                       self.game_end = 10
                       self.msg_y = -10     
@@ -343,12 +347,12 @@ class APP:
           else:
               self.title_col = 3     
       pyxel.text(2, 10, "Press S or Any GamePad Button", self.title_col)      
-      pyxel.text(2, 20, "MAP: " + str(self.tile), 9)
+      pyxel.text(2, 20, "MAP: " + str(self.tile + 1), 9)
       #pyxel.text(2, 24, "Right and left keys: Select Map", 6)
       
       map_draw_x = 5
       map_draw_y = 30
-      pyxel.rectb(map_draw_x-1, map_draw_y-1, 91, 91, 9)
+      pyxel.rectb(map_draw_x-1, map_draw_y-1, 91, 91, 9)      
       for md in range(len(self.map_data)):
           for md2 in range(len(self.map_data[md])):
               if self.map_data[md][md2] == 1:
@@ -406,7 +410,7 @@ class APP:
       
       #Player draw////////////////////////////////////////////////////
       #Game Continue
-      if self.game_flag == 0:          
+      if self.game_flag == 0 or self.game_flag == 100:          
           pD.player_draw(self.player, self.max_a, self.max_f)
       #Game Over
       elif self.game_flag == 99:
@@ -431,15 +435,17 @@ class APP:
             pyxel.text(24, 110,"3: Attack Power + " + str(self.up_atk),7)
             pyxel.text(4, 119, "Press S or Any GamePad Button", 6)     
             pyxel.blt(15, 90+((self.sel_upg-1) * 10) - 1, 1, 16, 0, 8, 8, 15)
-      elif (self.enemy_num_m == 10 or self.enemy_num_m == 5 
-         or self.enemy_num_m == 1):        
-          pyxel.text(29, self.msg_y,"Remaining targets: " + 
-                     str(self.enemy_num),1)
-          pyxel.text(30, self.msg_y,"Remaining targets: " + 
-                     str(self.enemy_num),10)
+    #  elif (self.enemy_num_m == 10 or self.enemy_num_m == 5 
+    #     or self.enemy_num_m == 1):        
+    #      pyxel.text(29, self.msg_y,"Remaining targets: " + 
+    #                 str(self.active_enemy),1)
+    #      pyxel.text(30, self.msg_y,"Remaining targets: " + 
+    #                 str(self.active_enemy),10)
       else:
-        pyxel.text(29, self.msg_y, "Destroy all targets.", 1)
-        pyxel.text(30, self.msg_y, "Destroy all targets.", 10)          
+        pyxel.text(29, self.msg_y, "MAP:" + str(self.tile + 1), 1)
+        pyxel.text(30, self.msg_y, "MAP:" + str(self.tile + 1), 10)          
+        pyxel.text(29, self.msg_y + 9, "Destroy all targets.", 1)
+        pyxel.text(30, self.msg_y + 9, "Destroy all targets.", 10)          
       
       
       #Debug//////////////////////////////////////////////////////////
@@ -457,7 +463,7 @@ class APP:
           self.player.p_f += 1
           
       #Player Attack
-      if pyxel.btn(pyxel.KEY_V) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_A):
+      if pyxel.btn(pyxel.KEY_V) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_A) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_B):
           if self.player.p_m == 1:
               m = self.player.p_m_b
           else:
@@ -545,18 +551,18 @@ class APP:
 
   def EnemyUpdate(self):
       #Enemy
-      active_enemy = 0
-      for enemy in self.enemy_pos:          
-          ecn = pyxel.rndi(1, 5)
+      self.active_enemy = 0
+      for enemy in self.enemy_pos:                
+          ecn = pyxel.rndi(1, 6)
           
-          if self.enemy_pos[enemy][1][1] < 4:
-              if self.enemy_pos[enemy][0] > 0:
-                  active_enemy += 1
+          if self.enemy_pos[enemy][1][1] < 4:              
+              if self.enemy_pos[enemy][0] >= 1:
+                  self.active_enemy += 1
               
           if  self.enemy_pos[enemy][0] < 1:
               pass
           #Attack action          
-          elif pyxel.frame_count % (30-self.enemy_pos[enemy][1][1] * ecn) == 0:              
+          elif pyxel.frame_count % (50 - self.enemy_pos[enemy][1][1] * ecn) == 0:              
               enm_x = enemy[0] * 8
               enm_y = enemy[1] * 8
               pre_x = self.player.p_x + self.camera[0]
@@ -580,8 +586,8 @@ class APP:
                       ang = -3 
                             
               if  self.enemy_pos[enemy][1][0] < 5:
-                  vx = 50
-                  vy = 50
+                  vx = 50 + self.tile * self.enemy_pos[enemy][1][0]
+                  vy = 50 + self.tile * self.enemy_pos[enemy][1][0]
               elif self.enemy_pos[enemy][1][0] in [5, 6, 7, 8]:                  
                   vx = 150
                   vy = 150
@@ -592,16 +598,24 @@ class APP:
                   else:
                       if  self.enemy_pos[enemy][1][0] < 5:
                           if enm_x > pre_x:
+                              v = 4
                               new_e_bullet = EnemyBullet(enm_x + 3,
                                                      enm_y + 3,
-                                                     4, ang, spd)
+                                                     v, ang, spd)
                           else:
+                              v = 2
                               new_e_bullet = EnemyBullet(enm_x + 3,
                                                      enm_y + 3,
-                                                     2, ang, spd)
+                                                     v, ang, spd)
                           self.e_bullets.append(new_e_bullet)
-                      elif self.enemy_pos[enemy][1][0] in [5, 6, 7, 8]:
-                      
+                          atk_chk = pyxel.rndi(0, 5)
+                          if self.tile > 3 and atk_chk < 1:
+                             new_e_bullet = EnemyBullet(enm_x + 3,
+                                                     enm_y + 3,
+                                                     v, ang, 1)
+                             self.e_bullets.append(new_e_bullet)
+
+                      elif self.enemy_pos[enemy][1][0] in [5, 6, 7, 8]:                          
                           if enm_x > pre_x:
                               new_e_bullet = EnemyBullet(enm_x + 3,
                                                      enm_y + 3,
@@ -625,10 +639,11 @@ class APP:
                                   new_e_bullet = EnemyBullet(enm_x + 3,
                                                          enm_y + 3,
                                                          i_v, a_i, spd)
-                                  self.e_bullets.append(new_e_bullet)      
-      if  active_enemy < 1:
+                                  self.e_bullets.append(new_e_bullet) 
+      
+      if  self.active_enemy < 1:
           for ene_del in self.enemy_pos:
-              self.enemy_pos[enemy][0] = 0
+              self.enemy_pos[ene_del][0] = 0
           self.enemy_num = 0
           self.game_end = 10
           self.msg_y = -10     
