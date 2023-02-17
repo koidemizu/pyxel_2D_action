@@ -175,33 +175,34 @@ class APP:
                 self.msg_y = -10
               else:
                 self.player.p_m2 = 0
-                if (pyxel.btnp(pyxel.KEY_S) or 
-                   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_X) or
-                   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_Y) or
-                   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A) or
-                   pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)
-                   ):
-                    if self.sel_upg == 1:
-                        self.tile += 1
-                        self.PlayerA_UP(self.up_a)
-                        self.PlayerReset()
-                        self.EnemyReset()
-                        self.OtherReset()
-                        self.EnemyListCreste()
-                    elif self.sel_upg == 2:
-                        self.tile += 1
-                        self.PlayerF_UP(self.up_f)
-                        self.PlayerReset()
-                        self.EnemyReset()
-                        self.OtherReset()
-                        self.EnemyListCreste()
-                    elif self.sel_upg == 3:
-                        self.tile += 1
-                        self.PlayerAtk_UP(self.up_atk)
-                        self.PlayerReset()
-                        self.EnemyReset()
-                        self.OtherReset()
-                        self.EnemyListCreste()
+                if self.msg_y > 49:
+                    if (pyxel.btnp(pyxel.KEY_S) or 
+                       pyxel.btnp(pyxel.GAMEPAD1_BUTTON_X) or
+                       pyxel.btnp(pyxel.GAMEPAD1_BUTTON_Y) or
+                       pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A) or
+                       pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B)
+                       ):
+                        if self.sel_upg == 1:
+                            self.tile += 1
+                            self.PlayerA_UP(self.up_a)
+                            self.PlayerReset()
+                            self.EnemyReset()
+                            self.OtherReset()
+                            self.EnemyListCreste()
+                        elif self.sel_upg == 2:
+                            self.tile += 1
+                            self.PlayerF_UP(self.up_f)
+                            self.PlayerReset()
+                            self.EnemyReset()
+                            self.OtherReset()
+                            self.EnemyListCreste()
+                        elif self.sel_upg == 3:
+                            self.tile += 1
+                            self.PlayerAtk_UP(self.up_atk)
+                            self.PlayerReset()
+                            self.EnemyReset()
+                            self.OtherReset()
+                            self.EnemyListCreste()
               
                 if (pyxel.btnp(pyxel.KEY_UP) or 
                    pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_UP)):
@@ -442,10 +443,13 @@ class APP:
     #      pyxel.text(30, self.msg_y,"Remaining targets: " + 
     #                 str(self.active_enemy),10)
       else:
-        pyxel.text(29, self.msg_y, "MAP:" + str(self.tile + 1), 1)
-        pyxel.text(30, self.msg_y, "MAP:" + str(self.tile + 1), 10)          
-        pyxel.text(29, self.msg_y + 9, "Destroy all targets.", 1)
-        pyxel.text(30, self.msg_y + 9, "Destroy all targets.", 10)          
+        if self.game_flag == 100:
+            pass
+        else:
+            pyxel.text(29, self.msg_y, "MAP:" + str(self.tile + 1), 1)
+            pyxel.text(30, self.msg_y, "MAP:" + str(self.tile + 1), 10)          
+            pyxel.text(29, self.msg_y + 9, "Destroy all targets.", 1)
+            pyxel.text(30, self.msg_y + 9, "Destroy all targets.", 10)          
       
       
       #Debug//////////////////////////////////////////////////////////
@@ -460,7 +464,7 @@ class APP:
       
       #Energy Recover
       if self.player.p_f < self.max_f + 1:
-          self.player.p_f += 1
+          self.player.p_f += self.max_f // 100
           
       #Player Attack
       if pyxel.btn(pyxel.KEY_V) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_A) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_B):
